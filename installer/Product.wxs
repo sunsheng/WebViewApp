@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WiX v3 MSI installer for WebViewApp.
+  Build:  candle.exe -arch x64 Product.wxs  &&  light.exe -ext WixUIExtension -ext WixUtilExtension Product.wixobj -out WebViewApp.msi
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <Product Id="*"
+           Name="WebViewApp"
+           Language="1033"
+           Version="!(bind.FileVersion.WebViewAppEXE)"
+           Manufacturer="MyCompany"
+           UpgradeCode="B2C3D4E5-F6A7-8901-BCDE-F12345678901">
+
+    <Package InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Description="WebViewApp Installer"
+             Manufacturer="MyCompany" />
+
+    <!-- Always upgrade, never allow downgrades -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- ===== WebView2 Evergreen Bootstrap ===== -->
+    <!--
+      Downloads and silently installs the WebView2 Evergreen Runtime
+      if it is not already present on the machine.
+      The bootstrapper is bundled inside the MSI via Binary table.
+    -->
+    <Binary Id="WebView2Bootstrapper"
+            SourceFile="..\redist\MicrosoftEdgeWebview2Setup.exe" />
+
+    <CustomAction Id="InstallWebView2"
+                  BinaryKey="WebView2Bootstrapper"
+                  ExeCommand="/silent /install"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+
+    <!-- Detect WebView2: check registry key written by the runtime -->
+    <Property Id="WEBVIEW2_INSTALLED">
+      <RegistrySearch Id="WebView2RegSearch"
+                      Root="HKLM"
+                      Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+                      Name="pv"
+                      Type="raw"
+                      Win64="no" />
+    </Property>
+    <!-- Also check 64-bit hive -->
+    <Property Id="WEBVIEW2_INSTALLED_64">
+      <RegistrySearch Id="WebView2RegSearch64"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+                      Name="pv"
+                      Type="raw"
+                      Win64="yes" />
+    </Property>
+
+    <!-- Condition: install WebView2 only if both registry keys are absent -->
+    <Condition Message="Windows 10 version 1803 or later is required.">
+      <![CDATA[VersionNT >= 603]]>
+    </Condition>
+
+    <InstallExecuteSequence>
+      <Custom Action="InstallWebView2"
+              Before="InstallFinalize">
+        <![CDATA[NOT WEBVIEW2_INSTALLED AND NOT WEBVIEW2_INSTALLED_64]]>
+      </Custom>
+    </InstallExecuteSequence>
+
+    <!-- ===== UI ===== -->
+    <UIRef Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <!-- ===== Directory structure ===== -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="WebViewApp" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="WebViewApp" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <!-- ===== Components ===== -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="WebViewAppEXEComponent"
+                 Guid="C3D4E5F6-A7B8-9012-CDEF-123456789012">
+        <File Id="WebViewAppEXE"
+              Source="..\bin\x64\Release\WebViewApp.exe"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Start menu shortcut -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="StartMenuShortcut"
+                 Guid="D4E5F6A7-B8C9-0123-DEF0-234567890123">
+        <Shortcut Id="StartMenuShortcutEntry"
+                  Name="WebViewApp"
+                  Description="WebViewApp"
+                  Target="[INSTALLFOLDER]WebViewApp.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveApplicationProgramsFolder"
+                      On="uninstall" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\MyCompany\WebViewApp"
+                       Name="StartMenuInstalled"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Desktop shortcut -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut"
+                 Guid="E5F6A7B8-C9D0-1234-EF01-345678901234">
+        <Shortcut Id="DesktopShortcutEntry"
+                  Name="WebViewApp"
+                  Description="WebViewApp"
+                  Target="[INSTALLFOLDER]WebViewApp.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\MyCompany\WebViewApp"
+                       Name="DesktopInstalled"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- ===== Features ===== -->
+    <Feature Id="ProductFeature" Title="WebViewApp" Level="1">
+      <ComponentRef Id="WebViewAppEXEComponent" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+  </Product>
+</Wix>
