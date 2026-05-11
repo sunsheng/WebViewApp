@@ -85,8 +85,8 @@ jobs:
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WebViewApp-${{ matrix.platform }}
-          path: bin/${{ matrix.platform }}/Release/WebViewApp.exe
+          name: xstack-${{ matrix.platform }}
+          path: bin/${{ matrix.platform }}/Release/xstack.exe
           if-no-files-found: error
 
   # ──────────────────────────────────────────────
@@ -104,7 +104,7 @@ jobs:
       - name: Download x64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: WebViewApp-x64
+          name: xstack-x64
           path: bin/x64/Release
 
       - name: Download WebView2 Bootstrapper
@@ -135,14 +135,14 @@ jobs:
         shell: pwsh
         working-directory: installer
         run: |
-          & light.exe -ext WixUIExtension -ext WixUtilExtension -cultures:en-us Product.wixobj -out WebViewApp-x64.msi
-          Write-Host "MSI size: $((Get-Item 'WebViewApp-x64.msi').Length) bytes"
+          & light.exe -ext WixUIExtension -ext WixUtilExtension -cultures:en-us Product.wixobj -out xstack-x64.msi
+          Write-Host "MSI size: $((Get-Item 'xstack-x64.msi').Length) bytes"
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WebViewApp-Installer
-          path: installer/WebViewApp-x64.msi
+          name: xstack-Installer
+          path: installer/xstack-x64.msi
           if-no-files-found: error
 
   # ──────────────────────────────────────────────
@@ -163,28 +163,26 @@ jobs:
         with:
           path: dist
 
-      - name: Rename artifacts for clarity
+      - name: Package release zip
         run: |
-          mv dist/WebViewApp-Win32/WebViewApp.exe  dist/WebViewApp-x86.exe
-          mv dist/WebViewApp-x64/WebViewApp.exe    dist/WebViewApp-x64.exe
-          mv dist/WebViewApp-Installer/WebViewApp-x64.msi dist/WebViewApp-x64.msi
+          mv dist/xstack-Win32/xstack.exe  dist/xstack-x86.exe
+          mv dist/xstack-x64/xstack.exe    dist/xstack-x64.exe
+          mv dist/xstack-Installer/xstack-x64.msi dist/xstack-x64.msi
+          cd dist && zip xstack.zip xstack-x86.exe xstack-x64.exe xstack-x64.msi
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "WebViewApp ${{ github.ref_name }}"
+          name: "xstack ${{ github.ref_name }}"
           body: |
-            ## WebViewApp ${{ github.ref_name }}
+            ## xstack ${{ github.ref_name }}
 
             | File | Description |
             |------|-------------|
-            | `WebViewApp-x64.msi` | Recommended – includes WebView2 auto-install |
-            | `WebViewApp-x64.exe` | Portable 64-bit executable |
-            | `WebViewApp-x86.exe` | Portable 32-bit executable |
-          files: |
-            dist/WebViewApp-x86.exe
-            dist/WebViewApp-x64.exe
-            dist/WebViewApp-x64.msi
+            | `xstack-x64.msi` | Recommended - includes WebView2 auto-install |
+            | `xstack-x64.exe` | Portable 64-bit executable |
+            | `xstack-x86.exe` | Portable 32-bit executable |
+          files: dist/xstack.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

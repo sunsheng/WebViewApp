@@ -11,8 +11,8 @@ static wil::com_ptr<ICoreWebView2Controller> g_controller;
 static wil::com_ptr<ICoreWebView2>           g_webview;
 static HWND g_hwnd = nullptr;
 
-static const wchar_t* TARGET_URL = L"https://www.baidu.com";
-static const wchar_t* APP_NAME   = L"WebViewApp";
+static const wchar_t* TARGET_URL = L"http://172.16.5.114:20000";
+static const wchar_t* APP_NAME   = L"xstack";
 
 static void ResizeWebView()
 {
@@ -56,8 +56,11 @@ static void InitWebView2(HWND hwnd)
                                     [](ICoreWebView2* sender,
                                        ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
                                         wil::unique_cotaskmem_string uri;
-                                        if (SUCCEEDED(args->get_Uri(&uri)) && uri && *uri)
-                                            g_webview->Navigate(uri.get());
+                                        PCWSTR p = nullptr;
+                                        if (SUCCEEDED(args->get_Uri(&uri)))
+                                            p = uri.get();
+                                        if (p && *p)
+                                            g_webview->Navigate(p);
                                         args->put_Handled(TRUE);
                                         return S_OK;
                                     })
