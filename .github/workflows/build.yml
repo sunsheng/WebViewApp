@@ -1,0 +1,218 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+env:
+  SOLUTION_FILE: WebViewApp.sln
+  WEBVIEW2_VERSION: "1.0.2903.40"
+  WIL_VERSION: "1.0.240803.1"
+  WIX_VERSION: "3.14.1"
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Job 1: Build x86 + x64 executables
+  # ──────────────────────────────────────────────
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [Win32, x64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Cache NuGet packages to speed up subsequent runs
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: packages
+          key: nuget-${{ env.WEBVIEW2_VERSION }}-${{ env.WIL_VERSION }}
+          restore-keys: nuget-
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: 'latest'
+
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION_FILE }} -PackagesDirectory packages
+
+      # Create a placeholder icon if one is not committed
+      - name: Ensure icon exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "src\app.ico")) {
+            # Copy a system icon as placeholder
+            Copy-Item "$env:SystemRoot\System32\shell32.dll" -Destination "src\shell32.dll" -ErrorAction SilentlyContinue
+            # Generate a minimal valid .ico using PowerShell + .NET
+            Add-Type -AssemblyName System.Drawing
+            $bmp = New-Object System.Drawing.Bitmap(32,32)
+            $g = [System.Drawing.Graphics]::FromImage($bmp)
+            $g.Clear([System.Drawing.Color]::DodgerBlue)
+            $g.Dispose()
+            $icon = [System.Drawing.Icon]::FromHandle($bmp.GetHicon())
+            $fs = [System.IO.File]::OpenWrite("src\app.ico")
+            $icon.Save($fs)
+            $fs.Close()
+            $bmp.Dispose()
+            Write-Host "Created placeholder app.ico"
+          }
+
+      - name: Build ${{ matrix.platform }} Release
+        run: |
+          msbuild ${{ env.SOLUTION_FILE }} `
+            /p:Configuration=Release `
+            /p:Platform=${{ matrix.platform }} `
+            /p:WebView2LoaderPreference=Static `
+            /p:WebView2Version=${{ env.WEBVIEW2_VERSION }} `
+            /p:WILVersion=${{ env.WIL_VERSION }} `
+            /m `
+            /v:minimal
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebViewApp-${{ matrix.platform }}
+          path: bin/${{ matrix.platform }}/Release/WebViewApp.exe
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────
+  # Job 2: Build MSI (x64 only)
+  # ──────────────────────────────────────────────
+  installer:
+    name: Build MSI Installer
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Download the x64 exe built in job 1
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: WebViewApp-x64
+          path: bin/x64/Release
+
+      # Download WebView2 Evergreen bootstrapper
+      - name: Download WebView2 Bootstrapper
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path redist | Out-Null
+          $url = "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+          Invoke-WebRequest -Uri $url -OutFile "redist\MicrosoftEdgeWebview2Setup.exe" -UseBasicParsing
+          Write-Host "Bootstrapper size: $((Get-Item 'redist\MicrosoftEdgeWebview2Setup.exe').Length) bytes"
+
+      # Install WiX Toolset
+      - name: Install WiX Toolset ${{ env.WIX_VERSION }}
+        shell: pwsh
+        run: |
+          $url = "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe"
+          Invoke-WebRequest -Uri $url -OutFile "wix_installer.exe" -UseBasicParsing
+          Start-Process -FilePath "wix_installer.exe" -ArgumentList "/quiet" -Wait
+          # Add WiX to PATH
+          $wixPath = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          echo "$wixPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Host "WiX installed to $wixPath"
+
+      - name: Compile WiX sources
+        shell: pwsh
+        working-directory: installer
+        run: |
+          & candle.exe `
+            -arch x64 `
+            -ext WixUIExtension `
+            -ext WixUtilExtension `
+            Product.wxs `
+            -out Product.wixobj
+
+      - name: Link MSI
+        shell: pwsh
+        working-directory: installer
+        run: |
+          & light.exe `
+            -ext WixUIExtension `
+            -ext WixUtilExtension `
+            -cultures:en-us `
+            Product.wixobj `
+            -out WebViewApp-x64.msi
+          Write-Host "MSI size: $((Get-Item 'WebViewApp-x64.msi').Length) bytes"
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebViewApp-Installer
+          path: installer/WebViewApp-x64.msi
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────
+  # Job 3: Publish to GitHub Releases (tag only)
+  # ──────────────────────────────────────────────
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build, installer]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: List dist contents
+        run: find dist -type f | sort
+
+      - name: Rename artifacts for clarity
+        run: |
+          mv dist/WebViewApp-Win32/WebViewApp.exe   dist/WebViewApp-x86.exe
+          mv dist/WebViewApp-x64/WebViewApp.exe     dist/WebViewApp-x64.exe
+          mv dist/WebViewApp-Installer/WebViewApp-x64.msi  dist/WebViewApp-x64.msi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "WebViewApp ${{ github.ref_name }}"
+          body: |
+            ## WebViewApp ${{ github.ref_name }}
+
+            ### Downloads
+            | File | Description |
+            |------|-------------|
+            | `WebViewApp-x64.msi` | Recommended – includes WebView2 auto-install |
+            | `WebViewApp-x64.exe` | Portable 64-bit executable |
+            | `WebViewApp-x86.exe` | Portable 32-bit executable |
+
+            ### Requirements
+            - Windows 10 1803+ / Windows 11
+            - WebView2 Runtime (MSI installer handles this automatically)
+          draft: false
+          prerelease: false
+          files: |
+            dist/WebViewApp-x86.exe
+            dist/WebViewApp-x64.exe
+            dist/WebViewApp-x64.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
