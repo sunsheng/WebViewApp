@@ -1,4 +1,3 @@
-# Build outputs
 bin/
 obj/
 *.user
@@ -6,14 +5,8 @@ obj/
 .vs/
 packages/
 *.aps
-
-# WiX intermediates
 installer/*.wixobj
 installer/*.wixpdb
-
-# Bootstrapper (downloaded at build time)
 redist/
-
-# IDE
 .vscode/
 *.log

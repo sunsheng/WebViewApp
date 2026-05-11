@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- ===== Platform configurations ===== -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -21,7 +20,6 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <!-- ===== Globals ===== -->
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -32,7 +30,6 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
-  <!-- ===== Common config ===== -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -51,29 +48,24 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
 
-  <!-- ===== NuGet package props ===== -->
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
             Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
             Label="LocalAppDataPlatform" />
   </ImportGroup>
 
-  <!-- ===== Output directories ===== -->
   <PropertyGroup>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)obj\$(Platform)\$(Configuration)\</IntDir>
-    <!-- Static-link WebView2Loader: no WebView2Loader.dll needed at runtime -->
     <WebView2LoaderPreference>Static</WebView2LoaderPreference>
   </PropertyGroup>
 
-  <!-- ===== Compiler settings ===== -->
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <!-- Static CRT: no MSVCRT*.dll dependency -->
       <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
       <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>
@@ -92,14 +84,12 @@
       <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
-        <!-- WebView2Loader static lib – path resolved by NuGet targets below -->
         $(SolutionDir)packages\Microsoft.Web.WebView2.$(WebView2Version)\build\native\$(Platform)\WebView2LoaderStatic.lib;
         version.lib;shlwapi.lib;%(AdditionalDependencies)
       </AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
-  <!-- ===== Source files ===== -->
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
@@ -112,7 +102,6 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <!-- NuGet WebView2 targets (sets WebView2Version, copies headers) -->
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)packages\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets"
             Condition="Exists('$(SolutionDir)packages\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
@@ -120,7 +109,6 @@
             Condition="Exists('$(SolutionDir)packages\Microsoft.Windows.ImplementationLibrary.$(WILVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
 
-  <!-- Fallback: if NuGet targets not yet imported, set versions explicitly -->
   <PropertyGroup>
     <WebView2Version Condition="'$(WebView2Version)'==''">1.0.2903.40</WebView2Version>
     <WILVersion Condition="'$(WILVersion)'==''">1.0.240803.1</WILVersion>
