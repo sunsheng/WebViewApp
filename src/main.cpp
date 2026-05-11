@@ -56,8 +56,11 @@ static void InitWebView2(HWND hwnd)
                                     [](ICoreWebView2* sender,
                                        ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
                                         wil::unique_cotaskmem_string uri;
-                                        if (SUCCEEDED(args->get_Uri(&uri)) && uri && *uri)
-                                            g_webview->Navigate(uri.get());
+                                        PCWSTR p = nullptr;
+                                        if (SUCCEEDED(args->get_Uri(&uri)))
+                                            p = uri.get();
+                                        if (p && *p)
+                                            g_webview->Navigate(p);
                                         args->put_Handled(TRUE);
                                         return S_OK;
                                     })
