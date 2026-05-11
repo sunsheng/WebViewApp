@@ -71,20 +71,15 @@ static void InitWebView2(HWND hwnd)
                                 Callback<ICoreWebView2NavigationStartingEventHandler>(
                                     [](ICoreWebView2* sender,
                                        ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT {
-                                        // inject before page scripts run
                                         const wchar_t* script =
                                             L"(function(){"
-                                            // disable right-click
                                             L"document.addEventListener('contextmenu',function(e){e.preventDefault();},true);"
-                                            // disable F12 / DevTools keys
                                             L"document.addEventListener('keydown',function(e){"
                                             L"  if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||"
                                             L"     (e.ctrlKey&&e.key==='U')){e.preventDefault();e.stopPropagation();}"
                                             L"},true);"
-                                            // disable drag
                                             L"document.addEventListener('dragstart',function(e){e.preventDefault();},true);"
                                             L"document.addEventListener('drop',function(e){e.preventDefault();},true);"
-                                            // weaken canvas fingerprint
                                             L"(function(){"
                                             L"  const orig=HTMLCanvasElement.prototype.toDataURL;"
                                             L"  HTMLCanvasElement.prototype.toDataURL=function(type){"
@@ -93,7 +88,6 @@ static void InitWebView2(HWND hwnd)
                                             L"    return orig.apply(this,arguments);"
                                             L"  };"
                                             L"})();"
-                                            // spoof hardwareConcurrency & deviceMemory
                                             L"Object.defineProperty(navigator,'hardwareConcurrency',{get:function(){return 4;}});"
                                             L"try{Object.defineProperty(navigator,'deviceMemory',{get:function(){return 8;}});}catch(e){}"
                                             L"})();";
