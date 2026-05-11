@@ -49,12 +49,15 @@ static void InitWebView2(HWND hwnd)
                             settings->put_IsScriptEnabled(TRUE);
                             settings->put_IsBuiltInErrorPageEnabled(FALSE);
 
-                            // ---- block new windows ----
+                            // ---- redirect target=_blank links into current view ----
                             EventRegistrationToken tok{};
                             g_webview->add_NewWindowRequested(
                                 Callback<ICoreWebView2NewWindowRequestedEventHandler>(
                                     [](ICoreWebView2* sender,
                                        ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
+                                        wil::unique_cotaskmem_string uri;
+                                        if (SUCCEEDED(args->get_Uri(&uri)) && uri && *uri)
+                                            g_webview->Navigate(uri.get());
                                         args->put_Handled(TRUE);
                                         return S_OK;
                                     })
