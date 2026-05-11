@@ -17,12 +17,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",      "MyCompany"
-            VALUE "FileDescription",  "WebViewApp"
+            VALUE "FileDescription",  "xstack"
             VALUE "FileVersion",      "1.0.0.0"
-            VALUE "InternalName",     "WebViewApp"
+            VALUE "InternalName",     "xstack"
             VALUE "LegalCopyright",   "Copyright 2025 MyCompany"
-            VALUE "OriginalFilename", "WebViewApp.exe"
-            VALUE "ProductName",      "WebViewApp"
+            VALUE "OriginalFilename", "xstack.exe"
+            VALUE "ProductName",      "xstack"
             VALUE "ProductVersion",   "1.0.0.0"
         END
     END

@@ -11,8 +11,8 @@ static wil::com_ptr<ICoreWebView2Controller> g_controller;
 static wil::com_ptr<ICoreWebView2>           g_webview;
 static HWND g_hwnd = nullptr;
 
-static const wchar_t* TARGET_URL = L"https://www.baidu.com";
-static const wchar_t* APP_NAME   = L"WebViewApp";
+static const wchar_t* TARGET_URL = L"http://172.16.5.114:20000";
+static const wchar_t* APP_NAME   = L"xstack";
 
 static void ResizeWebView()
 {

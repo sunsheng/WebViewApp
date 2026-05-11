@@ -3,16 +3,16 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
   <Product Id="*"
-           Name="WebViewApp"
+           Name="xstack"
            Language="1033"
-           Version="!(bind.FileVersion.WebViewAppEXE)"
+           Version="!(bind.FileVersion.xstackEXE)"
            Manufacturer="MyCompany"
            UpgradeCode="B2C3D4E5-F6A7-8901-BCDE-F12345678901">
 
     <Package InstallerVersion="500"
              Compressed="yes"
              InstallScope="perMachine"
-             Description="WebViewApp Installer"
+             Description="xstack Installer"
              Manufacturer="MyCompany" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -60,19 +60,19 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
-        <Directory Id="INSTALLFOLDER" Name="WebViewApp" />
+        <Directory Id="INSTALLFOLDER" Name="xstack" />
       </Directory>
       <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="WebViewApp" />
+        <Directory Id="ApplicationProgramsFolder" Name="xstack" />
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
     </Directory>
 
     <DirectoryRef Id="INSTALLFOLDER">
-      <Component Id="WebViewAppEXEComponent"
+      <Component Id="xstackEXEComponent"
                  Guid="C3D4E5F6-A7B8-9012-CDEF-123456789012">
-        <File Id="WebViewAppEXE"
-              Source="..\bin\x64\Release\WebViewApp.exe"
+        <File Id="xstackEXE"
+              Source="..\bin\x64\Release\xstack.exe"
               KeyPath="yes" />
       </Component>
     </DirectoryRef>
@@ -81,13 +81,13 @@
       <Component Id="StartMenuShortcut"
                  Guid="D4E5F6A7-B8C9-0123-DEF0-234567890123">
         <Shortcut Id="StartMenuShortcutEntry"
-                  Name="WebViewApp"
-                  Description="WebViewApp"
-                  Target="[INSTALLFOLDER]WebViewApp.exe"
+                  Name="xstack"
+                  Description="xstack"
+                  Target="[INSTALLFOLDER]xstack.exe"
                   WorkingDirectory="INSTALLFOLDER" />
         <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
         <RegistryValue Root="HKCU"
-                       Key="Software\MyCompany\WebViewApp"
+                       Key="Software\MyCompany\xstack"
                        Name="StartMenuInstalled"
                        Type="integer" Value="1" KeyPath="yes" />
       </Component>
@@ -97,19 +97,19 @@
       <Component Id="DesktopShortcut"
                  Guid="E5F6A7B8-C9D0-1234-EF01-345678901234">
         <Shortcut Id="DesktopShortcutEntry"
-                  Name="WebViewApp"
-                  Description="WebViewApp"
-                  Target="[INSTALLFOLDER]WebViewApp.exe"
+                  Name="xstack"
+                  Description="xstack"
+                  Target="[INSTALLFOLDER]xstack.exe"
                   WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue Root="HKCU"
-                       Key="Software\MyCompany\WebViewApp"
+                       Key="Software\MyCompany\xstack"
                        Name="DesktopInstalled"
                        Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
-    <Feature Id="ProductFeature" Title="WebViewApp" Level="1">
-      <ComponentRef Id="WebViewAppEXEComponent" />
+    <Feature Id="ProductFeature" Title="xstack" Level="1">
+      <ComponentRef Id="xstackEXEComponent" />
       <ComponentRef Id="StartMenuShortcut" />
       <ComponentRef Id="DesktopShortcut" />
     </Feature>
