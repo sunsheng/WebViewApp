@@ -4,7 +4,8 @@
     Name="WebView2桌面应用"
     Manufacturer="个人开发"
     Version="1.0.0.0"
-    UpgradeCode="PUT-GUID-HERE">
+    UpgradeCode="PUT-GUID-HERE"
+    Language="2052">
 
     <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
     <MediaTemplate EmbedCab="yes" />
@@ -12,9 +13,10 @@
     <Feature Id="MainFeature" Title="主程序" Level="1">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentGroupRef Id="Shortcuts" />
+      <ComponentRef Id="RemoveInstallFolder" />
     </Feature>
 
-    <StandardDirectory Id="ProgramFilesFolder">
+    <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用" />
     </StandardDirectory>
 
@@ -43,10 +45,26 @@
       <Component Id="MicrosoftWebWebView2Core" Guid="*">
         <File Source="publish\App\Microsoft.Web.WebView2.Core.dll" />
       </Component>
+      <!-- 原生 DLL，WebView2 运行时必须 -->
+      <Component Id="WebView2LoaderDll" Guid="*">
+        <File Source="publish\App\WebView2Loader.dll" />
+      </Component>
       <Component Id="ConfigIni" Guid="*">
         <File Source="publish\App\config.ini" />
       </Component>
     </ComponentGroup>
+
+    <!-- 卸载时清理安装目录 -->
+    <Component Id="RemoveInstallFolder" Directory="INSTALLFOLDER" Guid="*">
+      <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall" />
+      <RegistryValue
+        Root="HKCU"
+        Key="Software\WebView2Desktop"
+        Name="InstallDir"
+        Type="string"
+        Value="[INSTALLFOLDER]"
+        KeyPath="yes" />
+    </Component>
   </Fragment>
 
   <!-- 快捷方式 -->
