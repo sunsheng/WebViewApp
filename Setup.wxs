@@ -13,16 +13,15 @@
   </Bundle>
 
   <!-- 主程序MSI定义 -->
-  <Fragment>
-    <Package
-      Id="*"
-      Name="WebView2桌面应用"
-      Manufacturer="个人开发"
-      Version="1.0.0.0"
-      UpgradeCode="PUT-GUID-HERE"
-      InstallerVersion="200"
-      Compressed="yes"
-      Scope="perMachine">
+  <Product
+    Id="*"
+    Name="WebView2桌面应用"
+    Manufacturer="个人开发"
+    Version="1.0.0.0"
+    UpgradeCode="PUT-GUID-HERE"
+    InstallerVersion="200"
+    Compressed="yes"
+    Scope="perMachine">
 
       <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
       <MediaTemplate EmbedCab="yes" />
@@ -39,8 +38,7 @@
 
       <StandardDirectory Id="DesktopFolder" />
       <StandardDirectory Id="ProgramMenuFolder" />
-    </Package>
-  </Fragment>
+    </Product>
 
   <!-- 应用程序文件 -->
   <Fragment>
@@ -113,13 +111,13 @@
         Id="Net8DesktopRuntime"
         DisplayName=".NET 8 桌面运行时"
         Compressed="no"
-        Cache="yes"
+        Cache="keep"
         PerMachine="yes"
         Permanent="yes"
         Vital="yes"
         SourceFile="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
         DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
-        InstallCommand="/quiet /norestart"
+        InstallArguments="/quiet /norestart"
         DetectCondition="NET8DESKTOPRUNTIME >= '8.0.0'" />
     </PackageGroup>
   </Fragment>
