@@ -14,7 +14,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: 安装 WiX 4 打包工具（指定兼容版本，避免自动升级到v7）
+      - name: 安装 WiX 4.0.5（无EULA限制）
         run: dotnet tool install --global wix --version 4.0.5
 
       - name: 自动生成GUID并替换占位符
@@ -32,7 +32,15 @@ jobs:
       - name: 发布框架依赖版本（不打包运行时）
         run: dotnet publish --configuration Release --framework net8.0-windows --self-contained false --output ./publish/App
 
-      - name: 生成MSI安装包（WiX 4 无EULA限制）
+      - name: 生成默认config.ini文件
+        run: |
+          @"
+          [WebConfig]
+          DefaultUrl=https://www.baidu.com
+          AppTitle=WebView2 桌面应用
+          "@ | Out-File -FilePath ./publish/App/config.ini -Encoding UTF8
+
+      - name: 生成MSI安装包
         run: wix build Setup.wxs -o ./publish/WebView2桌面应用.msi
 
       - name: 上传最终产物

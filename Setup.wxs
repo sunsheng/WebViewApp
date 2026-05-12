@@ -1,64 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package
-    Name="WebView2桌面应用"
-    Manufacturer="个人开发"
-    Version="1.0.0.0"
-    UpgradeCode="PUT-GUID-HERE"
-    InstallerVersion="200"
-    Compressed="yes"
-    Scope="perMachine">
+  <!-- 依赖检测（必须放在Package外面） -->
+  <Bundle Name="WebView2桌面应用" Version="1.0.0.0" Manufacturer="个人开发" UpgradeCode="PUT-GUID-HERE">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />
 
-    <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
-    <MediaTemplate EmbedCab="yes" />
+    <Chain>
+      <!-- .NET 8 桌面运行时依赖检测 -->
+      <PackageGroupRef Id="Net8DesktopRuntime" />
+      <!-- 主程序MSI -->
+      <MsiPackage Id="MainPackage" SourceFile="WebView2Desktop.msi" Vital="yes" />
+    </Chain>
+  </Bundle>
 
-    <!-- 自动检测并引导下载.NET 8桌面运行时 -->
-    <Dependency
-      Id="Net8DesktopRuntime"
-      DisplayName=".NET 8 桌面运行时"
-      Url="https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-desktop-8.0.0-windows-x64-installer"
-      Version="8.0.0" />
+  <!-- 主程序MSI定义 -->
+  <Fragment>
+    <Package
+      Id="*"
+      Name="WebView2桌面应用"
+      Manufacturer="个人开发"
+      Version="1.0.0.0"
+      UpgradeCode="PUT-GUID-HERE"
+      InstallerVersion="200"
+      Compressed="yes"
+      Scope="perMachine">
 
-    <!-- 自动检测并引导下载WebView2运行时 -->
-    <Dependency
-      Id="WebView2Runtime"
-      DisplayName="Microsoft Edge WebView2 运行时"
-      Url="https://go.microsoft.com/fwlink/p/?LinkId=2124703"
-      Version="1.0.0.0" />
+      <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
+      <MediaTemplate EmbedCab="yes" />
 
-    <Feature Id="MainFeature" Title="主程序" Level="1">
-      <ComponentGroupRef Id="MainComponents" />
-    </Feature>
+      <Feature Id="MainFeature" Title="主程序" Level="1">
+        <ComponentGroupRef Id="AppFiles" />
+        <ComponentGroupRef Id="Shortcuts" />
+      </Feature>
 
-    <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用">
-          <Component Id="MainExe" Guid="*">
-            <File Id="WebView2DesktopExe" Source="publish\App\WebView2Desktop.exe" KeyPath="yes" />
-            <Shortcut
-              Id="DesktopShortcut"
-              Name="WebView2桌面应用"
-              Directory="DesktopFolder"
-              Target="[INSTALLFOLDER]WebView2Desktop.exe"
-              WorkingDirectory="INSTALLFOLDER" />
-            <Shortcut
-              Id="StartMenuShortcut"
-              Name="WebView2桌面应用"
-              Directory="ProgramMenuFolder"
-              Target="[INSTALLFOLDER]WebView2Desktop.exe"
-              WorkingDirectory="INSTALLFOLDER" />
-          </Component>
-        </Directory>
-      </Directory>
-      <Directory Id="DesktopFolder" />
-      <Directory Id="ProgramMenuFolder" />
-    </Directory>
+      <!-- 标准目录定义（WiX 4新语法） -->
+      <StandardDirectory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用" />
+      </StandardDirectory>
 
-    <ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
-      <Component Id="AllAppFiles" Guid="*">
-        <File Id="AllFiles" Source="publish\App\**" />
-        <RemoveFolder Id="RemoveInstallDir" On="uninstall" />
+      <StandardDirectory Id="DesktopFolder" />
+      <StandardDirectory Id="ProgramMenuFolder" />
+    </Package>
+  </Fragment>
+
+  <!-- 应用程序文件 -->
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Component Id="WebView2DesktopExe" Guid="*">
+        <File Source="publish\App\WebView2Desktop.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="WebView2DesktopDll" Guid="*">
+        <File Source="publish\App\WebView2Desktop.dll" />
+      </Component>
+      <Component Id="WebView2DesktopRuntimeConfig" Guid="*">
+        <File Source="publish\App\WebView2Desktop.runtimeconfig.json" />
+      </Component>
+      <Component Id="WebView2DesktopDepsJson" Guid="*">
+        <File Source="publish\App\WebView2Desktop.deps.json" />
+      </Component>
+      <Component Id="MicrosoftWebWebView2WinForms" Guid="*">
+        <File Source="publish\App\Microsoft.Web.WebView2.WinForms.dll" />
+      </Component>
+      <Component Id="MicrosoftWebWebView2Core" Guid="*">
+        <File Source="publish\App\Microsoft.Web.WebView2.Core.dll" />
+      </Component>
+      <Component Id="ConfigIni" Guid="*">
+        <File Source="publish\App\config.ini" />
       </Component>
     </ComponentGroup>
-  </Package>
+  </Fragment>
+
+  <!-- 快捷方式 -->
+  <Fragment>
+    <ComponentGroup Id="Shortcuts" Directory="INSTALLFOLDER">
+      <Component Id="DesktopShortcut" Guid="*">
+        <Shortcut
+          Id="DesktopShortcut"
+          Name="WebView2桌面应用"
+          Target="[INSTALLFOLDER]WebView2Desktop.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Directory="DesktopFolder" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\WebView2Desktop"
+          Name="Installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+
+      <Component Id="StartMenuShortcut" Guid="*">
+        <Shortcut
+          Id="StartMenuShortcut"
+          Name="WebView2桌面应用"
+          Target="[INSTALLFOLDER]WebView2Desktop.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Directory="ProgramMenuFolder" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\WebView2Desktop"
+          Name="StartMenuShortcut"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- .NET 8 桌面运行时依赖检测 -->
+  <Fragment>
+    <PackageGroup Id="Net8DesktopRuntime">
+      <ExePackage
+        Id="Net8DesktopRuntime"
+        DisplayName=".NET 8 桌面运行时"
+        Compressed="no"
+        Cache="yes"
+        PerMachine="yes"
+        Permanent="yes"
+        Vital="yes"
+        SourceFile="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
+        InstallCommand="/quiet /norestart"
+        DetectCondition="NET8DESKTOPRUNTIME >= '8.0.0'" />
+    </PackageGroup>
+  </Fragment>
 </Wix>
