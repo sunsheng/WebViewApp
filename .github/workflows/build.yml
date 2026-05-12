@@ -14,8 +14,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: 安装 WiX 4 打包工具
-        run: dotnet tool install --global wix
+      - name: 安装 WiX 4 打包工具（指定兼容版本，避免自动升级到v7）
+        run: dotnet tool install --global wix --version 4.0.5
 
       - name: 自动生成GUID并替换占位符
         run: |
@@ -32,7 +32,7 @@ jobs:
       - name: 发布框架依赖版本（不打包运行时）
         run: dotnet publish --configuration Release --framework net8.0-windows --self-contained false --output ./publish/App
 
-      - name: 生成MSI安装包
+      - name: 生成MSI安装包（WiX 4 无EULA限制）
         run: wix build Setup.wxs -o ./publish/WebView2桌面应用.msi
 
       - name: 上传最终产物
