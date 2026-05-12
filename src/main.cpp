@@ -138,10 +138,12 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int nCmdShow)
     wc.hIcon         = LoadIconW(hInst, MAKEINTRESOURCEW(101));
     RegisterClassExW(&wc);
 
+    int screenW = GetSystemMetrics(SM_CXSCREEN);
+    int screenH = GetSystemMetrics(SM_CYSCREEN);
     HWND hwnd = CreateWindowExW(
         0, APP_NAME, APP_NAME,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1280, 800,
+        WS_POPUP,
+        0, 0, screenW, screenH,
         nullptr, nullptr, hInst, nullptr);
 
     g_hwnd = hwnd;
