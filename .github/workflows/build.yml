@@ -34,11 +34,8 @@ jobs:
 
       - name: 生成默认config.ini文件
         run: |
-          @"
-          [WebConfig]
-          DefaultUrl=https://www.baidu.com
-          AppTitle=WebView2 桌面应用
-          "@ | Out-File -FilePath ./publish/App/config.ini -Encoding UTF8
+          $content = "[WebConfig]`nDefaultUrl=https://www.baidu.com`nAppTitle=WebView2 桌面应用`n"
+          [System.IO.File]::WriteAllText("./publish/App/config.ini", $content, [System.Text.UTF8Encoding]::new($false))
 
       - name: 生成MSI安装包
         run: wix build Setup.wxs -o ./publish/WebView2桌面应用.msi -arch x64
