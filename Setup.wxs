@@ -17,7 +17,7 @@
     </Feature>
 
     <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用" />
+      <Directory Id="INSTALLFOLDER" Name="WebView2App" />
     </StandardDirectory>
 
     <StandardDirectory Id="DesktopFolder" />
@@ -49,9 +49,7 @@
       <Component Id="WebView2LoaderDll" Guid="*">
         <File Source="publish\App\WebView2Loader.dll" />
       </Component>
-      <Component Id="ConfigIni" Guid="*">
-        <File Source="publish\App\config.ini" />
-      </Component>
+
     </ComponentGroup>
 
     <!-- 卸载时清理安装目录 -->

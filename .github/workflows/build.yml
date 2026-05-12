@@ -32,11 +32,6 @@ jobs:
       - name: 发布框架依赖版本（不打包运行时）
         run: dotnet publish --configuration Release --framework net8.0-windows --runtime win-x64 --self-contained false --output ./publish/App
 
-      - name: 生成默认config.ini文件
-        run: |
-          $content = "[WebConfig]`nDefaultUrl=https://www.baidu.com`nAppTitle=WebView2 桌面应用`n"
-          [System.IO.File]::WriteAllText("./publish/App/config.ini", $content, [System.Text.UTF8Encoding]::new($false))
-
       - name: 生成MSI安装包
         run: wix build Setup.wxs -o ./publish/WebView2桌面应用.msi -arch x64
 

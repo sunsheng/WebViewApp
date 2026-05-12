@@ -10,6 +10,13 @@ namespace WebView2Desktop
     {
         private static readonly string IniPath = Path.Combine(Application.StartupPath, "config.ini");
 
+        public static void EnsureDefaults()
+        {
+            if (File.Exists(IniPath)) return;
+            var content = "[WebConfig]\nDefaultUrl=https://www.baidu.com\nAppTitle=WebView2 桌面应用\n";
+            File.WriteAllText(IniPath, content, new UTF8Encoding(false));
+        }
+
         public static string ReadValue(string section, string key, string defaultValue = "")
         {
             if (!File.Exists(IniPath))
