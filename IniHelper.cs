@@ -1,7 +1,8 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text; // 👈 修复缺失的引用（解决编译错误）
+using System.Text;
+using System.Windows.Forms;
 
 namespace WebView2Desktop
 {

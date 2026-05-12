@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace WebView2Desktop
 {
@@ -8,9 +9,9 @@ namespace WebView2Desktop
         public string UrlText => txtUrl.Text.Trim();
         public string AppTitleText => txtTitle.Text.Trim();
 
-        private TextBox txtUrl;
-        private TextBox txtTitle;
-        private Button btnSave;
+        private TextBox? txtUrl;
+        private TextBox? txtTitle;
+        private Button? btnSave;
 
         public ConfigForm(string initUrl, string initTitle)
         {
@@ -29,7 +30,6 @@ namespace WebView2Desktop
             Size = new Size(450, 220);
             KeyPreview = true;
 
-            // 标题标签+输入框
             var lblTitle = new Label
             {
                 Text = "程序标题：",
@@ -42,7 +42,6 @@ namespace WebView2Desktop
                 Size = new Size(300, 28)
             };
 
-            // 网址标签+输入框
             var lblUrl = new Label
             {
                 Text = "默认网址：",
@@ -55,7 +54,6 @@ namespace WebView2Desktop
                 Size = new Size(300, 28)
             };
 
-            // 保存按钮
             btnSave = new Button
             {
                 Text = "保存配置",
@@ -64,14 +62,12 @@ namespace WebView2Desktop
             };
             btnSave.Click += BtnSave_Click;
 
-            // 加入控件
             Controls.Add(lblTitle);
             Controls.Add(txtTitle);
             Controls.Add(lblUrl);
             Controls.Add(txtUrl);
             Controls.Add(btnSave);
 
-            // ESC关闭窗口
             KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Escape)

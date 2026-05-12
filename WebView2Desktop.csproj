@@ -4,8 +4,6 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <!-- 框架依赖发布，不打包运行时 -->
     <SelfContained>false</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
   </PropertyGroup>
