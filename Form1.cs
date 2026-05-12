@@ -35,6 +35,7 @@ namespace WebView2Desktop
 
         private async void Form1_Load(object? sender, EventArgs e)
         {
+            IniHelper.EnsureDefaults();
             _currentUrl = IniHelper.ReadValue("WebConfig", "DefaultUrl", "https://www.baidu.com");
             _currentAppTitle = IniHelper.ReadValue("WebConfig", "AppTitle", "WebView2 桌面应用");
             Text = _currentAppTitle;
