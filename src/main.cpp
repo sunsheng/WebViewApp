@@ -138,16 +138,14 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int nCmdShow)
     wc.hIcon         = LoadIconW(hInst, MAKEINTRESOURCEW(101));
     RegisterClassExW(&wc);
 
-    int screenW = GetSystemMetrics(SM_CXSCREEN);
-    int screenH = GetSystemMetrics(SM_CYSCREEN);
     HWND hwnd = CreateWindowExW(
         0, APP_NAME, APP_NAME,
-        WS_POPUP,
-        0, 0, screenW, screenH,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         nullptr, nullptr, hInst, nullptr);
 
     g_hwnd = hwnd;
-    ShowWindow(hwnd, nCmdShow);
+    ShowWindow(hwnd, SW_SHOWMAXIMIZED);
     UpdateWindow(hwnd);
 
     InitWebView2(hwnd);
