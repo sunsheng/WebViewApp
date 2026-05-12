@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text; // 👈 修复缺失的引用（解决编译错误）
 
 namespace WebView2Desktop
 {
@@ -10,7 +11,7 @@ namespace WebView2Desktop
         private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern int GetPrivateProfileString(string section, string key, string def, 
+        private static extern int GetPrivateProfileString(string section, string key, string def,
             StringBuilder retVal, int size, string filePath);
 
         private static readonly string IniPath = Path.Combine(Application.StartupPath, "config.ini");

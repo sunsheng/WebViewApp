@@ -1,41 +1,34 @@
 name: 手动编译 .NET8 WinForms WebView2
 
-# 只保留手动触发，关闭自动触发
 on:
-  workflow_dispatch:  # 手动点击运行
+  workflow_dispatch:  # 仅手动触发
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      # 拉取代码
       - name: 检出代码
         uses: actions/checkout@v4
 
-      # 安装 .NET 8 SDK
       - name: 安装 .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # 还原NuGet依赖
-      - name: NuGet 还原
+      - name: NuGet 还原依赖
         run: dotnet restore
 
-      # Release编译
       - name: Release 编译
         run: dotnet build --configuration Release --no-restore
 
-      # 框架依赖发布 不自包含运行时
       - name: 发布框架依赖版本
         run: |
           dotnet publish `
           --configuration Release `
-          --net8.0-windows `
+          --framework net8.0-windows `
           --self-contained false `
-          --publish-dir ./publish/App
+          --output ./publish/App
 
-      # 上传制品，供手动下载
       - name: 上传编译成品
         uses: actions/upload-artifact@v4
         with:
