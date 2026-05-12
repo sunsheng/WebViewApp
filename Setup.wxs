@@ -7,7 +7,7 @@
     UpgradeCode="PUT-GUID-HERE"
     InstallerVersion="200"
     Compressed="yes"
-    InstallScope="perMachine">
+    Scope="perMachine">
 
     <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
     <MediaTemplate EmbedCab="yes" />
