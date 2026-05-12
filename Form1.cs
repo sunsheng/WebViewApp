@@ -1,5 +1,7 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
 namespace WebView2Desktop
@@ -31,7 +33,7 @@ namespace WebView2Desktop
             Controls.Add(_webView);
         }
 
-        private void Form1_Load(object? sender, EventArgs e)
+        private async void Form1_Load(object? sender, EventArgs e)
         {
             _currentUrl = IniHelper.ReadValue("WebConfig", "DefaultUrl", "https://www.baidu.com");
             _currentAppTitle = IniHelper.ReadValue("WebConfig", "AppTitle", "WebView2 桌面应用");
@@ -39,21 +41,32 @@ namespace WebView2Desktop
 
             if (_webView != null)
             {
-                _webView.EnsureCoreWebView2Async().ContinueWith(t =>
+                // 配置WebView2环境，允许局域网HTTP访问
+                var envOptions = new CoreWebView2EnvironmentOptions
                 {
-                    if (!t.IsFaulted)
-                    {
-                        Invoke(() => _webView.CoreWebView2.Navigate(_currentUrl));
-                    }
-                });
+                    AdditionalBrowserArguments = "--disable-features=EnhancedSecurityMode --allow-insecure-localhost"
+                };
+                var env = await CoreWebView2Environment.CreateAsync(null, null, envOptions);
+                
+                await _webView.EnsureCoreWebView2Async(env);
+                
+                // 启用所有必要功能
+                _webView.CoreWebView2.Settings.IsScriptEnabled = true;
+                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+                _webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
+                _webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                _webView.CoreWebView2.Settings.IsStatusBarEnabled = true;
+                
+                // 导航到目标地址
+                _webView.CoreWebView2.Navigate(_currentUrl);
             }
 
             _globalHotkey?.Register();
         }
 
-        private void ShowConfigWindow()
+        private async void ShowConfigWindow()
         {
-            Invoke(() =>
+            Invoke(async () =>
             {
                 using var configForm = new ConfigForm(_currentUrl, _currentAppTitle);
                 if (configForm.ShowDialog() == DialogResult.OK)
@@ -61,11 +74,21 @@ namespace WebView2Desktop
                     _currentUrl = configForm.UrlText;
                     _currentAppTitle = configForm.AppTitleText;
 
+                    // 写入配置文件
                     IniHelper.WriteValue("WebConfig", "DefaultUrl", _currentUrl);
                     IniHelper.WriteValue("WebConfig", "AppTitle", _currentAppTitle);
 
+                    // 实时更新窗口标题
                     Text = _currentAppTitle;
-                    _webView?.CoreWebView2?.Navigate(_currentUrl);
+
+                    // 强制重新加载（彻底解决不刷新问题）
+                    if (_webView != null && _webView.CoreWebView2 != null)
+                    {
+                        _webView.CoreWebView2.Stop();
+                        _webView.CoreWebView2.Navigate("about:blank");
+                        await Task.Delay(150);
+                        _webView.CoreWebView2.Navigate(_currentUrl);
+                    }
                 }
             });
         }

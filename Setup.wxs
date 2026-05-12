@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="WebView2桌面应用"
+    Manufacturer="个人开发"
+    Version="1.0.0.0"
+    UpgradeCode="PUT-GUID-HERE"
+    InstallerVersion="200"
+    Compressed="yes"
+    InstallScope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- 自动检测并引导下载.NET 8桌面运行时 -->
+    <Dependency
+      Id="Net8DesktopRuntime"
+      DisplayName=".NET 8 桌面运行时"
+      Url="https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-desktop-8.0.0-windows-x64-installer"
+      Version="8.0.0" />
+
+    <!-- 自动检测并引导下载WebView2运行时 -->
+    <Dependency
+      Id="WebView2Runtime"
+      DisplayName="Microsoft Edge WebView2 运行时"
+      Url="https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+      Version="1.0.0.0" />
+
+    <Feature Id="MainFeature" Title="主程序" Level="1">
+      <ComponentGroupRef Id="MainComponents" />
+    </Feature>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用">
+          <Component Id="MainExe" Guid="*">
+            <File Id="WebView2DesktopExe" Source="publish\App\WebView2Desktop.exe" KeyPath="yes" />
+            <Shortcut
+              Id="DesktopShortcut"
+              Name="WebView2桌面应用"
+              Directory="DesktopFolder"
+              Target="[INSTALLFOLDER]WebView2Desktop.exe"
+              WorkingDirectory="INSTALLFOLDER" />
+            <Shortcut
+              Id="StartMenuShortcut"
+              Name="WebView2桌面应用"
+              Directory="ProgramMenuFolder"
+              Target="[INSTALLFOLDER]WebView2Desktop.exe"
+              WorkingDirectory="INSTALLFOLDER" />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="DesktopFolder" />
+      <Directory Id="ProgramMenuFolder" />
+    </Directory>
+
+    <ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
+      <Component Id="AllAppFiles" Guid="*">
+        <File Id="AllFiles" Source="publish\App\**" />
+        <RemoveFolder Id="RemoveInstallDir" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+  </Package>
+</Wix>

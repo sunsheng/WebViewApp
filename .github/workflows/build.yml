@@ -1,4 +1,4 @@
-name: 手动编译 .NET8 WinForms WebView2
+name: 手动编译并生成MSI安装包
 
 on:
   workflow_dispatch:
@@ -14,12 +14,31 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - run: dotnet restore
-      - run: dotnet build --configuration Release --no-restore
-      - run: dotnet publish --configuration Release --framework net8.0-windows --self-contained false --output ./publish/App
+      - name: 安装 WiX 4 打包工具
+        run: dotnet tool install --global wix
 
-      - name: 上传编译产物
+      - name: 自动生成GUID并替换占位符
+        run: |
+          $newGuid = [guid]::NewGuid().ToString().ToUpper()
+          (Get-Content Setup.wxs) -replace 'PUT-GUID-HERE', $newGuid | Set-Content Setup.wxs
+          Write-Host "已生成新的UpgradeCode: $newGuid"
+
+      - name: 还原NuGet依赖
+        run: dotnet restore
+
+      - name: 编译Release版本
+        run: dotnet build --configuration Release --no-restore
+
+      - name: 发布框架依赖版本（不打包运行时）
+        run: dotnet publish --configuration Release --framework net8.0-windows --self-contained false --output ./publish/App
+
+      - name: 生成MSI安装包
+        run: wix build Setup.wxs -o ./publish/WebView2桌面应用.msi
+
+      - name: 上传最终产物
         uses: actions/upload-artifact@v4
         with:
-          name: App-编译成品
-          path: ./publish/App
+          name: WebView2应用完整包
+          path: |
+            ./publish/App
+            ./publish/WebView2桌面应用.msi
