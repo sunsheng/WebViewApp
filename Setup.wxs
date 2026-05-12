@@ -49,6 +49,9 @@
       <Component Id="WebView2LoaderDll" Guid="*">
         <File Source="publish\App\WebView2Loader.dll" />
       </Component>
+      <Component Id="UninstallExe" Guid="*">
+        <File Source="publish\Uninstall\Uninstall.exe" />
+      </Component>
 
     </ComponentGroup>
 
