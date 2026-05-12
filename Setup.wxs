@@ -1,44 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <!-- 依赖检测（必须放在Package外面） -->
-  <Bundle Name="WebView2桌面应用" Version="1.0.0.0" Manufacturer="个人开发" UpgradeCode="PUT-GUID-HERE">
-    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />
-
-    <Chain>
-      <!-- .NET 8 桌面运行时依赖检测 -->
-      <PackageGroupRef Id="Net8DesktopRuntime" />
-      <!-- 主程序MSI -->
-      <MsiPackage Id="MainPackage" SourceFile="WebView2Desktop.msi" Vital="yes" />
-    </Chain>
-  </Bundle>
-
-  <!-- 主程序MSI定义 -->
-  <Product
-    Id="*"
+  <Package
     Name="WebView2桌面应用"
     Manufacturer="个人开发"
     Version="1.0.0.0"
-    UpgradeCode="PUT-GUID-HERE"
-    InstallerVersion="200"
-    Compressed="yes"
-    Scope="perMachine">
+    UpgradeCode="PUT-GUID-HERE">
 
-      <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
-      <MediaTemplate EmbedCab="yes" />
+    <MajorUpgrade DowngradeErrorMessage="已安装更高版本，请先卸载。" />
+    <MediaTemplate EmbedCab="yes" />
 
-      <Feature Id="MainFeature" Title="主程序" Level="1">
-        <ComponentGroupRef Id="AppFiles" />
-        <ComponentGroupRef Id="Shortcuts" />
-      </Feature>
+    <Feature Id="MainFeature" Title="主程序" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="Shortcuts" />
+    </Feature>
 
-      <!-- 标准目录定义（WiX 4新语法） -->
-      <StandardDirectory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用" />
-      </StandardDirectory>
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="INSTALLFOLDER" Name="WebView2桌面应用" />
+    </StandardDirectory>
 
-      <StandardDirectory Id="DesktopFolder" />
-      <StandardDirectory Id="ProgramMenuFolder" />
-    </Product>
+    <StandardDirectory Id="DesktopFolder" />
+    <StandardDirectory Id="ProgramMenuFolder" />
+  </Package>
 
   <!-- 应用程序文件 -->
   <Fragment>
@@ -102,23 +84,5 @@
           KeyPath="yes" />
       </Component>
     </ComponentGroup>
-  </Fragment>
-
-  <!-- .NET 8 桌面运行时依赖检测 -->
-  <Fragment>
-    <PackageGroup Id="Net8DesktopRuntime">
-      <ExePackage
-        Id="Net8DesktopRuntime"
-        DisplayName=".NET 8 桌面运行时"
-        Compressed="no"
-        Cache="keep"
-        PerMachine="yes"
-        Permanent="yes"
-        Vital="yes"
-        SourceFile="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
-        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/774f4703-0204-4120-9708-8774f3774447/9c3b3e7a7c6b8a9e0d1f2c3b4a5e6f7d/dotnet-runtime-8.0.5-win-x64.exe"
-        InstallArguments="/quiet /norestart"
-        DetectCondition="NET8DESKTOPRUNTIME >= '8.0.0'" />
-    </PackageGroup>
   </Fragment>
 </Wix>
