@@ -9,6 +9,7 @@ namespace WebView2Desktop
         private readonly WebView2 _webView;
         private readonly GlobalHotkey _globalHotkey;
         private string _currentUrl = "";
+        private string _currentAppTitle = "";
 
         public Form1()
         {
@@ -21,10 +22,8 @@ namespace WebView2Desktop
 
         private void InitializeComponent()
         {
-            Text = "WebView2 桌面应用";
             WindowState = FormWindowState.Maximized;
 
-            // 原生WebView2控件
             _webView = new WebView2
             {
                 Dock = DockStyle.Fill
@@ -34,10 +33,15 @@ namespace WebView2Desktop
 
         private void Form1_Load(object? sender, EventArgs e)
         {
-            // 读取配置
+            // 读取网址配置
             _currentUrl = IniHelper.ReadValue("WebConfig", "DefaultUrl", "https://www.baidu.com");
+            // 读取程序标题配置
+            _currentAppTitle = IniHelper.ReadValue("WebConfig", "AppTitle", "WebView2 桌面应用");
 
-            // 初始化WebView2并跳转
+            // 赋值窗口标题
+            this.Text = _currentAppTitle;
+
+            // 初始化WebView2跳转
             _webView.EnsureCoreWebView2Async().ContinueWith(t =>
             {
                 if (!t.IsFaulted)
@@ -50,18 +54,24 @@ namespace WebView2Desktop
             _globalHotkey.Register();
         }
 
-        // 唤起配置弹窗
         private void ShowConfigWindow()
         {
             Invoke(() =>
             {
-                using var configForm = new ConfigForm(_currentUrl);
+                // 传入当前网址+标题
+                using var configForm = new ConfigForm(_currentUrl, _currentAppTitle);
                 if (configForm.ShowDialog() == DialogResult.OK)
                 {
+                    // 更新内存变量
                     _currentUrl = configForm.UrlText;
-                    // 保存到ini
+                    _currentAppTitle = configForm.AppTitleText;
+
+                    // 写入INI配置
                     IniHelper.WriteValue("WebConfig", "DefaultUrl", _currentUrl);
-                    // 刷新页面
+                    IniHelper.WriteValue("WebConfig", "AppTitle", _currentAppTitle);
+
+                    // 实时刷新窗口标题 + 网页
+                    this.Text = _currentAppTitle;
                     _webView.CoreWebView2?.Navigate(_currentUrl);
                 }
             });

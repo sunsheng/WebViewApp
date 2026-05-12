@@ -6,46 +6,72 @@ namespace WebView2Desktop
     public partial class ConfigForm : Form
     {
         public string UrlText => txtUrl.Text.Trim();
+        public string AppTitleText => txtTitle.Text.Trim();
 
         private TextBox txtUrl;
+        private TextBox txtTitle;
         private Button btnSave;
 
-        public ConfigForm(string initUrl)
+        public ConfigForm(string initUrl, string initTitle)
         {
             InitializeComponent();
             txtUrl.Text = initUrl;
+            txtTitle.Text = initTitle;
         }
 
         private void InitializeComponent()
         {
-            Text = "配置网址";
+            Text = "程序配置";
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
-            Size = new Size(450, 180);
+            Size = new Size(450, 220);
             KeyPreview = true;
 
-            // 输入框
+            // 标题标签+输入框
+            var lblTitle = new Label
+            {
+                Text = "程序标题：",
+                Location = new Point(20, 15),
+                AutoSize = true
+            };
+            txtTitle = new TextBox
+            {
+                Location = new Point(90, 12),
+                Size = new Size(300, 28)
+            };
+
+            // 网址标签+输入框
+            var lblUrl = new Label
+            {
+                Text = "默认网址：",
+                Location = new Point(20, 60),
+                AutoSize = true
+            };
             txtUrl = new TextBox
             {
-                Location = new Point(20, 30),
-                Size = new Size(380, 28)
+                Location = new Point(90, 57),
+                Size = new Size(300, 28)
             };
 
             // 保存按钮
             btnSave = new Button
             {
                 Text = "保存配置",
-                Location = new Point(160, 80),
+                Location = new Point(160, 110),
                 Size = new Size(120, 35)
             };
             btnSave.Click += BtnSave_Click;
 
+            // 加入控件
+            Controls.Add(lblTitle);
+            Controls.Add(txtTitle);
+            Controls.Add(lblUrl);
             Controls.Add(txtUrl);
             Controls.Add(btnSave);
 
-            // ESC关闭
+            // ESC关闭窗口
             KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Escape)
@@ -58,6 +84,11 @@ namespace WebView2Desktop
             if (string.IsNullOrWhiteSpace(UrlText))
             {
                 MessageBox.Show("请输入有效网址", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(AppTitleText))
+            {
+                MessageBox.Show("程序标题不能为空", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             DialogResult = DialogResult.OK;
